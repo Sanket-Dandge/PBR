@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cstdio>
+#include <cstdint>
 
 #define COLOR_RESET   "\033[0m"
 #define COLOR_GREEN   "\033[32m"
 
 #define LOG(fmt, ...) \
-    std::printf("\n");(COLOR_GREEN fmt "\n" COLOR_RESET, ##__VA_ARGS__)
+    std::printf(COLOR_GREEN fmt COLOR_RESET "\n", ##__VA_ARGS__)

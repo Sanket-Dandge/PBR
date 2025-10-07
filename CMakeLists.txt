@@ -8,6 +8,28 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_compile_options(-Wall -Wpedantic)
 
+set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)
+
+set(IMGUI_SOURCES
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui_demo.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+add_library(imgui STATIC ${IMGUI_SOURCES})
+
+target_include_directories(imgui PUBLIC
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
+
+
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 # set(assimp_DIR "/usr/local/lib/cmake/assimp-6.0/")
 
@@ -32,6 +54,8 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(assimp REQUIRED)
 
+target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
+
 # Executable name
 set(PROJECT_NAME_EXEC pbr)
 
@@ -43,6 +67,7 @@ target_link_libraries(${PROJECT_NAME_EXEC}
     glad
     glfw
     assimp
+    imgui
     OpenGL::GL
     ${CMAKE_DL_LIBS}
 )

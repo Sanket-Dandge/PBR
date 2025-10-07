@@ -9,8 +9,8 @@
 #include "shader.h"
 
 Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath) {
-    std::string vertexCode = readFile(baseFolder + vertexShaderPath);
-    std::string fragmentCode = readFile(baseFolder + fragmentShaderPath);
+    std::string vertexCode = readFile(vertexShaderPath);
+    std::string fragmentCode = readFile(fragmentShaderPath);
 
     const char* vertexShaderCode = vertexCode.c_str();
     const char* fragmentShaderCode = fragmentCode.c_str();

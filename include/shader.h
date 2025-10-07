@@ -31,7 +31,4 @@ class Shader {
         void setMat3(const std::string& name, const glm::mat3& value) const;
         void setMat4(const std::string& name, const glm::mat4& value) const;
 
-    private:
-        std::string baseFolder = "resources";
-
 };
