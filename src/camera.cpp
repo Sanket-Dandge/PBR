@@ -1,20 +1,13 @@
 #include "camera.h"
-#include "Core.h"
 
-#include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 Camera::Camera(glm::vec3& position, glm::vec3& up, float yaw, float pitch)
-    : m_position(position), m_orientation(glm::identity<glm::quat>()), m_up(up), m_yaw(yaw), m_pitch(pitch) {
-    // updateCameraVectors();
-}
+    : m_position(position), m_up(up), m_yaw(yaw), m_pitch(pitch) {}
 
 
 Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
-    : m_position(posX, posY, posZ), m_up(upX, upY, upZ), m_yaw(yaw), m_pitch(pitch)
-{
-    // updateCameraVectors();
-}
+    : m_position(posX, posY, posZ), m_up(upX, upY, upZ), m_yaw(yaw), m_pitch(pitch) {}
 
 glm::vec3 Camera::getFrontDirection() {
     float xDirection = cos(m_yaw) * cos(m_pitch);
@@ -25,7 +18,6 @@ glm::vec3 Camera::getFrontDirection() {
 }
 
 glm::mat4 Camera::getViewMatrix() {
-    // return glm::translate(glm::mat4_cast(glm::conjugate(m_orientation)), -m_position);
     return glm::lookAt(m_position, m_position + getFrontDirection(), m_up);
 }
 
@@ -35,13 +27,13 @@ glm::mat4 Camera::getProjectionMatrix(float aspectRatio) {
 
 void Camera::processKeyboardInput(Movement direction, float deltaTime) {
     float velocity    = m_mouseSpeed * deltaTime;
-    glm::vec3 forward = m_orientation * glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 right   = m_orientation * glm::vec3(1.0f, 0.0f, 0.0f);
-    glm::vec3 up      = m_orientation * glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 front = getFrontDirection();
+    glm::vec3 right = glm::normalize(glm::cross(front, m_up));
+    glm::vec3 up = glm::normalize(glm::cross(right, front));
 
     switch (direction) {
-        case Movement::FORWARD : m_position += forward * velocity; break;
-        case Movement::BACKWARD : m_position -= forward * velocity; break;
+        case Movement::FORWARD : m_position += front * velocity; break;
+        case Movement::BACKWARD : m_position -= front * velocity; break;
         case Movement::LEFT : m_position -= right * velocity; break;
         case Movement::RIGHT : m_position += right * velocity; break;
         case Movement::UP : m_position += up * velocity; break;
@@ -61,6 +53,7 @@ void Camera::processMouseMovement(float xoffset, float yoffset, GLboolean constr
         if (m_pitch > 89.0f) m_pitch = 89.0f;
         if (m_pitch < -89.0f) m_pitch = -89.0f;
     }
+
 }
 
 void Camera::useKeyboardActions(GLFWwindow* window, float dt) {
@@ -86,5 +79,5 @@ void Camera::useMouseActions(const MousePositions& mousePositions) {
     lastX = mousePositions.x;
     lastY = mousePositions.y;
 
-    processMouseMovement(xoffset, yoffset);
+    processMouseMovement(xoffset, yoffset, false);
 }

@@ -1,12 +1,11 @@
 #include "skybox.h"
+#include "Core.h"
 #include "cube.h"
 #include "glad.h"
 #include "stb_image.h"
 #include <GL/gl.h>
 #include <memory>
 #include <vector>
-
-#include "Core.h"
 
 Skybox::Skybox(std::vector<std::string> faces) {
     loadCubemap(faces);
@@ -16,7 +15,6 @@ Skybox::Skybox(std::vector<std::string> faces) {
 void Skybox::loadCubemap(std::vector<std::string> faces) {
     stbi_set_flip_vertically_on_load(false);
     glGenTextures(1, &m_textureID);
-    LOG("textureID = %u", m_textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureID);
 
     int width, height, nrChannels;
@@ -45,7 +43,6 @@ void Skybox::loadCubemap(std::vector<std::string> faces) {
 void Skybox::Draw() {
     glDepthFunc(GL_LEQUAL);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureID);
-    // LOG("textureID = %u", m_textureID);
     m_Cube->Draw();
     glDepthFunc(GL_LESS);
 }

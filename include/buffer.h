@@ -7,6 +7,8 @@ class Buffer {
     public:
         void loadBuffer();
         void loadFramebuffer();
+        void loadQuadBuffer();
+
         virtual const std::vector<float>& getVertices() const = 0;
         virtual const uint32_t& getFramebufferWidth() const = 0;
         virtual const uint32_t& getFramebufferHeight() const = 0;

@@ -2,7 +2,6 @@
 
 #include "glad.h"
 #include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
 
 #include "window.h"
 
@@ -44,13 +43,12 @@ class Camera {
         
     private:
         glm::vec3 m_position;
-        glm::quat m_orientation;
         glm::vec3 m_up;
         float m_yaw = -90.0f;
         float m_pitch = 0.0f;
 
         float m_mouseSpeed = 2.5f;
-        float m_mouseSensitivity = 0.01f;
+        float m_mouseSensitivity = 0.006f;
         
         float near = 0.1f;
         float far = 100.0f;

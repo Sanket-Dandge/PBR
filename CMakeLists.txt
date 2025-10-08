@@ -31,7 +31,7 @@ target_include_directories(imgui PUBLIC
 
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-# set(assimp_DIR "/usr/local/lib/cmake/assimp-6.0/")
+set(assimp_DIR "/usr/local/lib/cmake/assimp-6.0/")
 
 # Sources
 file(GLOB_RECURSE sources

@@ -40,7 +40,7 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath) {
 std::string Shader::readFile(const std::filesystem::path& path) const {
     std::ifstream file(path);
     if (!file.is_open()) {
-        LOG("Shader File Not Found: ", path);
+        LOG("Shader File Not Found: %s", path.c_str());
         return "";
     }
 
@@ -117,4 +117,8 @@ void Shader::setMat3(const std::string& name, const glm::mat3& value) const {
 
 void Shader::setMat4(const std::string& name, const glm::mat4& value) const {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &value[0][0]);
+}
+
+void Shader::setVec3Array(const std::string& name, std::vector<glm::vec3> values) const {
+    glUniform3fv(glGetUniformLocation(ID, name.c_str()), values.size(), &values[0][0]);
 }

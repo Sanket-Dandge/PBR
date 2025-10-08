@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <string>
 #include <glm/glm.hpp>
+#include <vector>
 
 class Shader {
     public:
@@ -30,5 +31,7 @@ class Shader {
         void setMat2(const std::string& name, const glm::mat2& value) const;
         void setMat3(const std::string& name, const glm::mat3& value) const;
         void setMat4(const std::string& name, const glm::mat4& value) const;
+
+        void setVec3Array(const std::string& name, std::vector<glm::vec3> values) const;
 
 };

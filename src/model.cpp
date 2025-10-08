@@ -23,7 +23,7 @@ void Model::loadModel(std::string const &path) {
 
     if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        LOG("%s: %s", path, importer.GetErrorString());
+        LOG("%s: %s", path.c_str(), importer.GetErrorString());
         return;
     }
     // INFO: retrieve the directory path of the filepath
