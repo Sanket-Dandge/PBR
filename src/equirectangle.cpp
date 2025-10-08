@@ -1,4 +1,5 @@
 #include "equirectangle.h"
+#include "Core.h"
 #include "constants.h"
 #include "glad.h"
 
@@ -10,8 +11,11 @@ EquirectangleCubemap::EquirectangleCubemap(const std::string& hdrPath) {
     std::string hdrVertexShader = "resources/Shaders/hdrcube.vs";
     std::string hdrFragmentShader = "resources/Shaders/hdrcube.fs";
 
+    LOG("Before shader");
     m_hdrShader = std::make_unique<Shader>(hdrVertexShader.c_str(), hdrFragmentShader.c_str());
+    LOG("Before hdrcube");
     m_hdrCube = std::make_unique<HDRCube>(hdrPath);
+    LOG("Before cubemapbuffer");
     m_framebuffer = std::make_unique<CubemapBuffer>(m_cubemapWidth, m_cubemapHeight);
 }
 

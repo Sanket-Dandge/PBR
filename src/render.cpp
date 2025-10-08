@@ -1,10 +1,11 @@
 #include "render.h"
+#include "Core.h"
+#include "config.h"
 #include "glad.h"
 #include "model.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <memory>
@@ -36,16 +37,19 @@ void Render::begin(std::shared_ptr<Scene> scene) {
     ImGui_ImplOpenGL3_Init(m_config.glslVersion);
 
     //  INFO: Framebuffer Loading
-    //
-    m_framebuffer = std::make_unique<Framebuffer>(s_window->getWidth(), s_window->getHeight());
-    m_framebuffer->loadFramebuffer();
 
+    LOG("before framebuffer");
+    m_framebuffer = std::make_unique<Framebuffer>(s_window->getWidth(), s_window->getHeight());
+    m_framebuffer->init();
+
+    LOG("before bloom framebuffer");
     mBloomFramebuffers[0] = std::make_unique<Bloom>(s_window->getWidth(), s_window->getHeight());
     mBloomFramebuffers[0]->loadBloomFramebuffer();
     mBloomFramebuffers[1] = std::make_unique<Bloom>(s_window->getWidth(), s_window->getHeight());
     mBloomFramebuffers[1]->loadBloomFramebuffer();
 
     //  INFO: Shader Loading
+    LOG("before shader pointer");
     m_cubeShader = std::make_unique<Shader>("resources/Shaders/cube.vs", "resources/Shaders/cube.fs");
     m_skyboxShader = std::make_unique<Shader>("resources/Shaders/skybox.vs", "resources/Shaders/skybox.fs");
     m_PbrShader = std::make_unique<Shader>("resources/Shaders/pbr.vs", "resources/Shaders/pbr.fs");
@@ -53,11 +57,14 @@ void Render::begin(std::shared_ptr<Scene> scene) {
     m_PostShader = std::make_unique<Shader>("resources/Shaders/post.vs", "resources/Shaders/post.fs");
 
     // Pre-compute IBL stuff
+    LOG("before writing EquirectangleCubemap pointer");
     mIblEquirectangularCubemap = std::make_unique<EquirectangleCubemap>(m_config.hdrPath);
+    LOG("before writing irradiance pointer");
     mIblEquirectangularCubemap->compute();
 
     mIblDiffuseIrradianceMap = std::make_unique<DiffuseIrradianceMap>(mIblEquirectangularCubemap->getCubemapID());
     mIblDiffuseIrradianceMap->compute();
+    LOG("before writing specular pointer");
 
     mIblSpecularMap = std::make_unique<SpecularMap>(mIblEquirectangularCubemap->getCubemapID());
     mIblSpecularMap->computePrefilteredEnvMap();
@@ -72,6 +79,7 @@ void Render::begin(std::shared_ptr<Scene> scene) {
         "resources/Textures/skybox/back.jpg"
     };
 
+    LOG("before writing main");
     m_fullscreenQuad = std::make_unique<Quad>();
     m_skybox = std::make_unique<Skybox>(faces);
     m_cube = std::make_unique<Cube>();
@@ -101,7 +109,7 @@ void Render::renderBloom() {
             break;
     }
 
-    glBindTexture(GL_TEXTURE_2D, m_framebuffer->getBloomTexture());
+    glBindTexture(GL_TEXTURE_2D, m_framebuffer->getBloomColorTextureId());
     glGenerateMipmap(GL_TEXTURE_2D);
 
     m_BloomShader->use();
@@ -112,13 +120,13 @@ void Render::renderBloom() {
 
         // first iteration we use the bloom buffer from the main render pass
         mBloomFramebuffers[0]->bind();
-        glBindTexture(GL_TEXTURE_2D, m_framebuffer->getBloomTexture());
+        glBindTexture(GL_TEXTURE_2D, m_framebuffer->getBloomColorTextureId());
         m_BloomShader->setInt("sampleMipLevel", mipLevel);
         m_BloomShader->setVec2("blurDirection", blurDirectionX);
 
         m_fullscreenQuad->Draw();
 
-        unsigned int bloomFramebuffer = 1; // which buffer to use
+        uint32_t bloomFramebuffer = 1; // which buffer to use
 
         for (auto i = 1; i < mBloomIterations; i++) {
             unsigned int sourceBuffer = bloomFramebuffer == 1 ? 0 : 1;
@@ -154,7 +162,7 @@ void Render::render() {
     ImGui::Checkbox("HDR Tone Mapping (Reinhard)", &mTonemappingEnabled);
     ImGui::SliderFloat("Gamma Correction", &mGammaCorrectionFactor, 1.0, 3.0);
 
-    m_framebuffer->bind();
+    // m_framebuffer->bind();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -227,33 +235,33 @@ void Render::render() {
     m_skyboxShader->setFloat("bloomBrightnessCutoff", mBloomBrightnessCutoff);
     m_skybox->Draw();
 
-    renderBloom();
-
-    // Post-processing pass
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // switch back to default fb
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    m_PostShader->use();
-
-    m_PostShader->setBool("bloomEnabled", mBloomEnabled);
-    m_PostShader->setFloat("bloomIntensity", mBloomIntensity);
-    m_PostShader->setBool("tonemappingEnabled", mTonemappingEnabled);
-    m_PostShader->setFloat("gammaCorrectionFactor", mGammaCorrectionFactor);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_framebuffer->getColorBuffer());
-    m_PostShader->setInt("colorTexture", 0);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, mBloomFramebuffers[mBloomFramebufferResult]->getColorTextureId());
-    m_PostShader->setInt("bloomTexture", 1);
-
-    m_fullscreenQuad->Draw();
+    // renderBloom();
+    //
+    // // Post-processing pass
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0); // switch back to default fb
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // m_PostShader->use();
+    //
+    // m_PostShader->setBool("bloomEnabled", mBloomEnabled);
+    // m_PostShader->setFloat("bloomIntensity", mBloomIntensity);
+    // m_PostShader->setBool("tonemappingEnabled", mTonemappingEnabled);
+    // m_PostShader->setFloat("gammaCorrectionFactor", mGammaCorrectionFactor);
+    //
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, m_framebuffer->getColorTextureId());
+    // m_PostShader->setInt("colorTexture", 0);
+    //
+    // glActiveTexture(GL_TEXTURE1);
+    // glBindTexture(GL_TEXTURE_2D, mBloomFramebuffers[mBloomFramebufferResult]->getColorTextureId());
+    // m_PostShader->setInt("bloomTexture", 1);
+    //
+    // m_fullscreenQuad->Draw();
 
     // draw ImGui
     ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    glfwPollEvents();
     glfwSwapBuffers(s_window->getGLFWwindow());
+    glfwPollEvents();
 }

@@ -10,7 +10,7 @@
 SpecularMap::SpecularMap(const uint32_t envCubemapID) : m_environmentCubemapId(envCubemapID) {
     // pre-filtered env map
     std::string prefilteredEnvMapVertexShaderPath = "resources/Shaders/specular.vs";
-    std::string prefilteredEnvMapFragmentShaderPath = "/src/ibl/shaders/specular.fs";
+    std::string prefilteredEnvMapFragmentShaderPath = "resources/Shaders/specular.fs";
 
     prefilteredEnvMapShader = std::make_unique<Shader>(prefilteredEnvMapVertexShaderPath.c_str(), prefilteredEnvMapFragmentShaderPath.c_str());
     prefilteredEnvMapFramebuffer = std::make_unique<MipmapCubemap>(m_prefilteredEnvMapWidth, m_prefilteredEnvMapHeight);

@@ -1,4 +1,5 @@
 #include "cubemapBuffer.h"
+#include "Core.h"
 #include "glad.h"
 #include <cstddef>
 
@@ -23,10 +24,12 @@ void CubemapBuffer::loadCubemapFramebuffer(int width, int height) {
     glGenTextures(1, &m_cubemapID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemapID);
 
+    LOG("Before glTexImage2D");
     // specify/allocate each face for the cubemap
     for (auto i = 0; i < 6;  i++) {
-        glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
     }
+    LOG("After glTexImage2D");
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

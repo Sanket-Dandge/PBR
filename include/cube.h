@@ -1,19 +1,22 @@
 #pragma once
 
-#include "buffer.h"
+#include <iostream>
 #include <vector>
 
-class Cube : public Buffer {
+#include "shader.h"
+
+class Cube {
     public:
         Cube();
-        virtual const std::vector<float>& getVertices() const override { return m_vertices; }
-        const uint32_t& getFramebufferWidth() const override;
-        const uint32_t& getFramebufferHeight() const override;
         void Draw();
-        virtual ~Cube() = default;
 
     private:
-        std::vector<float> m_vertices = {
+        void loadVertexData();
+
+    private:
+        unsigned int mVAO, mVBO;
+
+        std::vector<float> mVertices = {
             // positions          
             -1.0f,  1.0f, -1.0f,
             -1.0f, -1.0f, -1.0f,
@@ -58,4 +61,3 @@ class Cube : public Buffer {
              1.0f, -1.0f,  1.0f
         };
 };
-

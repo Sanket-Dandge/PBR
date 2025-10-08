@@ -1,44 +1,52 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "stb_image.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/pbrmaterial.h>
+#include "material.h"
+#include "stb_image.h"
 
-#include "shader.h"
+#include <map>
 #include "mesh.h"
 
-#include <string>
-#include <vector>
-
-inline unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false);
-
+/**
+ * A collection of meshes.
+ */
 class Model {
-    public:
-        // INFO: stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
-        std::vector<Texture> textures_loaded;
-        std::vector<Mesh>    meshes;
-        std::string directory;
-        bool gammaCorrection;
+public:
+    /**
+     * Load a glTF 2.0 model.
+     * @param path
+     */
+	Model(std::string path);
+    Model(std::string path, bool flipTexturesVertically);
 
-        // INFO: constructor, expects a filepath to a 3D model.
-        Model(std::string const &path, bool gamma = false);
+    /**
+     * Load a glTF 2.0 model using a provided material. This will ignore any material
+     * present in the model file.
+     * @param path
+     */
+    Model(std::string path, std::shared_ptr<Material> material, bool flipTexturesVertically);
+	void Draw(Shader& shader);
 
-        // INFO: draws the model, and thus all its meshes
-        void Draw(Shader &shader);
+private:
+	void loadModel(std::string path, bool flipTexturesVertically);
 
-    private:
-        // INFO: loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-        void loadModel(std::string const &path);
+	// recursively load all meshes in the node tree 
+	void processNode(aiNode* node, const aiScene* scene);
 
-        // INFO: processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
-        void processNode(aiNode *node, const aiScene *scene);
-        Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+	// convert assimp mesh to our own mesh class
+	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
-        // INFO: checks all material textures of a given type and loads the textures if they're not loaded yet.
-        // the required info is returned as a Texture struct.
-        std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
+	// loads the first texture of given type
+    std::shared_ptr<Texture> loadMaterialTexture(aiMaterial* material, aiTextureType type);
+	unsigned int textureFromFile(const char* fileName, std::string directory, aiTextureType type);
+
+private:
+    // data
+    std::vector<Mesh> mMeshes;
+    std::string mDirectory;
+    std::map<std::string, std::shared_ptr<Texture>> mTexturesLoaded;
+    std::shared_ptr<Material> mMaterialOverride;
 };
-

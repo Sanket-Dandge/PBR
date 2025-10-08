@@ -11,7 +11,7 @@
 
 DiffuseIrradianceMap::DiffuseIrradianceMap(const unsigned int environmentCubemapId) : m_envCubemapID(environmentCubemapId) {
     std::string diffuseIrradianceVertexShaderPath = "resources/Shaders/irradiance.vs";
-    std::string diffuseIrradianceFragmentShaderPath = "/src/ibl/shaders/irradiance.fs";
+    std::string diffuseIrradianceFragmentShaderPath = "resources/Shaders/irradiance.fs";
 
     diffuseIrradianceShader = std::make_unique<Shader>(diffuseIrradianceVertexShaderPath.c_str(), diffuseIrradianceFragmentShaderPath.c_str());
     diffuseIrradianceFramebuffer = std::make_unique<CubemapBuffer>(diffuseIrradianceMapWidth, diffuseIrradianceMapHeight);

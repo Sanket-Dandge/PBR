@@ -1,22 +1,34 @@
-#include "glad.h"
 #include "cube.h"
 
+#include "glad.h"
+
 Cube::Cube() {
-    loadBuffer();
+    loadVertexData();
 }
 
-void Cube::Draw() {
-    glBindVertexArray(m_VAO);
-    glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+void
+Cube::Draw() {
+    // draw mesh
+    glBindVertexArray(mVAO);
+    glDrawArrays(GL_TRIANGLES, 0, mVertices.size());
     glBindVertexArray(0);
-}
+};
 
-const uint32_t& Cube::getFramebufferWidth() const {
-    static const uint32_t dummyWidth = 0;
-    return dummyWidth;
-}
+void
+Cube::loadVertexData() {
+    // create our data structures
+    glGenVertexArrays(1, &mVAO);
+    glGenBuffers(1, &mVBO);
 
-const uint32_t& Cube::getFramebufferHeight() const {
-    static const uint32_t dummyHeight = 0;
-    return dummyHeight;
+    glBindVertexArray(mVAO); // use this VAO for subsequent calls
+
+    glBindBuffer(GL_ARRAY_BUFFER, mVBO); // use this VBO for subsequent calls
+    glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(float), &mVertices[0], GL_STATIC_DRAW); // copy over the vertex data
+
+    // setup the locations of vertex data
+    // positions
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    glBindVertexArray(0);
 }
