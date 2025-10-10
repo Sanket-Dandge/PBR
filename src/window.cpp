@@ -30,6 +30,8 @@ void Window::startWindow() {
     });
 
     glfwSetScrollCallback(m_window, scroll_callback);
+
+    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void Window::update() {
@@ -51,4 +53,12 @@ void Window::scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 void Window::processScrollMovement(float yoffset) {
     m_zoom -= yoffset;
     m_zoom = glm::clamp(m_zoom, 1.0f, 90.0f);
+}
+
+void Window::showCursor() {
+    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void Window::hideCursor() {
+    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }

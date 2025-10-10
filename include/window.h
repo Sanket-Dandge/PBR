@@ -16,8 +16,9 @@ class Window {
     public:
         Window() {}
         void startWindow();
-        void setupCallbacks(GLFWwindow* window);
         void update();
+        void showCursor();
+        void hideCursor();
 
         static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
         void processInput(GLFWwindow* window);

@@ -12,6 +12,10 @@ Skybox::Skybox(std::vector<std::string> faces) {
     m_Cube = std::make_unique<Cube>();
 }
 
+Skybox::Skybox(uint32_t textureId) : m_textureID(textureId) {
+    m_Cube = std::make_unique<Cube>();
+}
+
 void Skybox::loadCubemap(std::vector<std::string> faces) {
     stbi_set_flip_vertically_on_load(false);
     glGenTextures(1, &m_textureID);

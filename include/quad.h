@@ -1,27 +1,36 @@
 #pragma once
 
-#include <cstdint>
-#include "buffer.h"
+#include <vector>
 
-class Quad : public Buffer {
-    public:
-        Quad();
+#include "shader.h"
 
-        virtual const std::vector<float>& getVertices() const override { return m_vertices; }
-        const uint32_t& getFramebufferWidth() const override;
-        const uint32_t& getFramebufferHeight() const override;
-        void Draw();
+const unsigned int QUAD_NUM_TRIANGLES = 6;
 
-    private:
-        uint32_t m_VAO, m_VBO;
-        std::vector<float> m_vertices = {
-            // positions   // textureCoordinates
-            -1.0f,  1.0f,  0.0f, 1.0f,
-            -1.0f, -1.0f,  0.0f, 0.0f,
-             1.0f, -1.0f,  1.0f, 0.0f,
+/**
+ * A unit square that covers the whole screen.
+ *
+ * Includes texture coordinates.
+ */
+class Quad {
+public:
+	Quad();
+    void Draw();
 
-            -1.0f,  1.0f,  0.0f, 1.0f,
-             1.0f, -1.0f,  1.0f, 0.0f,
-             1.0f,  1.0f,  1.0f, 1.0f
-        };
+private:
+    void loadVertexData();
+
+private: 
+    unsigned int mVAO;
+    unsigned int mVBO;
+
+    std::vector<float> mVertices = {
+		// positions   // textureCoordinates
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		 1.0f, -1.0f,  1.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f, 1.0f
+    };
 };

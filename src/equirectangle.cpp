@@ -33,7 +33,7 @@ void EquirectangleCubemap::compute() {
         };
     glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 2.0f);
 
-    // glViewport(0, 0, m_cubemapWidth, m_cubemapHeight);
+    glViewport(0, 0, m_cubemapWidth, m_cubemapHeight);
 
     // render the equirectangular HDR texture to a cubemap
     m_framebuffer->bind();

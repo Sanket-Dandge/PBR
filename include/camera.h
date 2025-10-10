@@ -23,11 +23,15 @@ class Camera {
     public:
         Camera(glm::vec3& position, glm::vec3& up, float yaw, float pitch);
         Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
+        void drawDebugPanel();
         void processKeyboardInput(Movement direction, float deltaTime);
         void processMouseMovement(float xoffset, float yoffset, GLboolean constraintPitch = true);
         void processScrollMovement(float yoffset);
         void useKeyboardActions(GLFWwindow* window, float dt);
         void useMouseActions(const MousePositions& mousePositions);
+        void resetMouse();
+        void enableGUIMouse();
+        void disableGUIMouse();
 
         //  NOTE: Getter/Setter Functions
         glm::vec3 getCameraPosition() { return m_position; }

@@ -1,5 +1,4 @@
 #include "render.h"
-#include "Core.h"
 #include "config.h"
 #include "glad.h"
 #include "model.h"
@@ -38,18 +37,15 @@ void Render::begin(std::shared_ptr<Scene> scene) {
 
     //  INFO: Framebuffer Loading
 
-    LOG("before framebuffer");
     m_framebuffer = std::make_unique<Framebuffer>(s_window->getWidth(), s_window->getHeight());
     m_framebuffer->init();
 
-    LOG("before bloom framebuffer");
     mBloomFramebuffers[0] = std::make_unique<Bloom>(s_window->getWidth(), s_window->getHeight());
     mBloomFramebuffers[0]->loadBloomFramebuffer();
     mBloomFramebuffers[1] = std::make_unique<Bloom>(s_window->getWidth(), s_window->getHeight());
     mBloomFramebuffers[1]->loadBloomFramebuffer();
 
     //  INFO: Shader Loading
-    LOG("before shader pointer");
     m_cubeShader = std::make_unique<Shader>("resources/Shaders/cube.vs", "resources/Shaders/cube.fs");
     m_skyboxShader = std::make_unique<Shader>("resources/Shaders/skybox.vs", "resources/Shaders/skybox.fs");
     m_PbrShader = std::make_unique<Shader>("resources/Shaders/pbr.vs", "resources/Shaders/pbr.fs");
@@ -57,18 +53,17 @@ void Render::begin(std::shared_ptr<Scene> scene) {
     m_PostShader = std::make_unique<Shader>("resources/Shaders/post.vs", "resources/Shaders/post.fs");
 
     // Pre-compute IBL stuff
-    LOG("before writing EquirectangleCubemap pointer");
     mIblEquirectangularCubemap = std::make_unique<EquirectangleCubemap>(m_config.hdrPath);
-    LOG("before writing irradiance pointer");
     mIblEquirectangularCubemap->compute();
 
     mIblDiffuseIrradianceMap = std::make_unique<DiffuseIrradianceMap>(mIblEquirectangularCubemap->getCubemapID());
     mIblDiffuseIrradianceMap->compute();
-    LOG("before writing specular pointer");
 
     mIblSpecularMap = std::make_unique<SpecularMap>(mIblEquirectangularCubemap->getCubemapID());
     mIblSpecularMap->computePrefilteredEnvMap();
     mIblSpecularMap->computeBrdfConvolutionMap();
+
+    // glViewport(0, 0, s_window->getWidth(), s_window->getHeight()); // set initial viewport size
 
     std::vector<std::string> faces = {
         "resources/Textures/skybox/right.jpg",
@@ -79,10 +74,8 @@ void Render::begin(std::shared_ptr<Scene> scene) {
         "resources/Textures/skybox/back.jpg"
     };
 
-    LOG("before writing main");
     m_fullscreenQuad = std::make_unique<Quad>();
-    m_skybox = std::make_unique<Skybox>(faces);
-    m_cube = std::make_unique<Cube>();
+    m_skybox = std::make_unique<Skybox>(mIblEquirectangularCubemap->getCubemapID());
 }
 
 void Render::shutdown() {}
@@ -143,26 +136,30 @@ void Render::renderBloom() {
 }
 
 void Render::render() {
-    ImGui::CollapsingHeader("General");
-    ImGui::Text("Average FPS %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    if (ImGui::CollapsingHeader("General", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Text("Average FPS %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    }
 
-    ImGui::CollapsingHeader("Post-processing");
+    s_camera->drawDebugPanel();
 
-    ImGui::Text("Bloom (Gaussian)");
-    ImGui::Checkbox("Enabled", &mBloomEnabled);
-    ImGui::SliderFloat("Intensity", &mBloomIntensity, 0.0, 5.0);
-    ImGui::SliderFloat("Threshold", &mBloomBrightnessCutoff, 0.01, 5.0);
-    ImGui::SliderInt("Blur Iterations", &mBloomIterations, 2, 20);
-    ImGui::Text("Direction: "); ImGui::SameLine();
-    ImGui::RadioButton("Both", &mBloomDirection, 0); ImGui::SameLine();
-    ImGui::RadioButton("Horizontal", &mBloomDirection, 1); ImGui::SameLine();
-    ImGui::RadioButton("Vertical", &mBloomDirection, 2);
+    if (ImGui::CollapsingHeader("Post-processing", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Text("Bloom (Gaussian)");
+        ImGui::Checkbox("Enabled", &mBloomEnabled);
+        ImGui::SliderFloat("Intensity", &mBloomIntensity, 0.0, 5.0);
+        ImGui::SliderFloat("Threshold", &mBloomBrightnessCutoff, 0.01, 5.0);
+        ImGui::SliderInt("Blur Iterations", &mBloomIterations, 2, 20);
+        ImGui::Text("Direction: "); ImGui::SameLine();
+        ImGui::RadioButton("Both", &mBloomDirection, 0); ImGui::SameLine();
+        ImGui::RadioButton("Horizontal", &mBloomDirection, 1); ImGui::SameLine();
+        ImGui::RadioButton("Vertical", &mBloomDirection, 2);
 
-    ImGui::Text("Post");
-    ImGui::Checkbox("HDR Tone Mapping (Reinhard)", &mTonemappingEnabled);
-    ImGui::SliderFloat("Gamma Correction", &mGammaCorrectionFactor, 1.0, 3.0);
+        ImGui::Text("Post");
+        ImGui::Checkbox("HDR Tone Mapping (Reinhard)", &mTonemappingEnabled);
+        ImGui::SliderFloat("Gamma Correction", &mGammaCorrectionFactor, 1.0, 3.0);
+    }
 
-    // m_framebuffer->bind();
+    m_framebuffer->bind();
+    // glViewport(0, 0, s_window->getWidth(), s_window->getHeight());
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -173,22 +170,9 @@ void Render::render() {
 
     m_PbrShader->use();
 
-    m_PbrShader->setVec3Array("lightPositions", m_scene->mLightPositions);
-    m_PbrShader->setVec3Array("lightColors", m_scene->mLightColors);
+    m_PbrShader->setVec3Array("lightPositions", m_scene->m_lightPositions);
+    m_PbrShader->setVec3Array("lightColors", m_scene->m_lightColors);
     m_PbrShader->setVec3("cameraPosition", camPosition);
-
-    // float spacing = 2.2f; // 2.0 for touching, +0.2 for a small visible gap
-    // for (int i = 0; i < 2; i++) {
-    //     float offsetX = (i == 0) ? -spacing / 2.0f : spacing / 2.0f;
-    //     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(offsetX, 0.0f, 0.0f));
-    //
-    //     m_cubeShader->use();
-    //     m_cubeShader->setVec3("cameraPosition", camPosition);
-    //     m_cubeShader->setMat4("model", model);
-    //     m_cubeShader->setMat4("view", view);
-    //     m_cubeShader->setMat4("projection", projection);
-    //     m_cube->Draw();
-    // }
 
     // IBL stuff
     glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_DIFFUSE_IRRADIANCE_MAP);
@@ -235,27 +219,28 @@ void Render::render() {
     m_skyboxShader->setFloat("bloomBrightnessCutoff", mBloomBrightnessCutoff);
     m_skybox->Draw();
 
-    // renderBloom();
-    //
-    // // Post-processing pass
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0); // switch back to default fb
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // m_PostShader->use();
-    //
-    // m_PostShader->setBool("bloomEnabled", mBloomEnabled);
-    // m_PostShader->setFloat("bloomIntensity", mBloomIntensity);
-    // m_PostShader->setBool("tonemappingEnabled", mTonemappingEnabled);
-    // m_PostShader->setFloat("gammaCorrectionFactor", mGammaCorrectionFactor);
-    //
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, m_framebuffer->getColorTextureId());
-    // m_PostShader->setInt("colorTexture", 0);
-    //
-    // glActiveTexture(GL_TEXTURE1);
-    // glBindTexture(GL_TEXTURE_2D, mBloomFramebuffers[mBloomFramebufferResult]->getColorTextureId());
-    // m_PostShader->setInt("bloomTexture", 1);
-    //
-    // m_fullscreenQuad->Draw();
+    renderBloom();
+
+    // Post-processing pass
+    glViewport(0, 0, s_window->getWidth(), s_window->getHeight());
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // switch back to default fb
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_PostShader->use();
+
+    m_PostShader->setBool("bloomEnabled", mBloomEnabled);
+    m_PostShader->setFloat("bloomIntensity", mBloomIntensity);
+    m_PostShader->setBool("tonemappingEnabled", mTonemappingEnabled);
+    m_PostShader->setFloat("gammaCorrectionFactor", mGammaCorrectionFactor);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_framebuffer->getColorTextureId());
+    m_PostShader->setInt("colorTexture", 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, mBloomFramebuffers[mBloomFramebufferResult]->getColorTextureId());
+    m_PostShader->setInt("bloomTexture", 1);
+
+    m_fullscreenQuad->Draw();
 
     // draw ImGui
     ImGui::End();

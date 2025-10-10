@@ -1,6 +1,5 @@
 #include "cameraControl.h"
 
-#include "Core.h"
 #include "camera.h"
 #include <GLFW/glfw3.h>
 #include <memory>
@@ -18,12 +17,28 @@ void CameraController::begin() {
 }
 
 void CameraController::update(float dt) {
-    double xpos, ypos;
-    glfwGetCursorPos(s_window->getGLFWwindow(), &xpos, &ypos);
-    m_mousePosition.x = static_cast<float>(xpos);
-    m_mousePosition.y = static_cast<float>(ypos);
+    if (glfwGetKey(s_window->getGLFWwindow(), GLFW_KEY_2) == GLFW_PRESS) {
+        mouseEnabled = false;
+        s_window->showCursor();
+        m_camera->enableGUIMouse();
+        m_camera->resetMouse();
+    }
 
-    m_camera->useMouseActions(m_mousePosition);
+    if (glfwGetKey(s_window->getGLFWwindow(), GLFW_KEY_1) == GLFW_PRESS) {
+        mouseEnabled = true;
+        s_window->hideCursor();
+        m_camera->disableGUIMouse();
+    }
+
+    if (mouseEnabled) {
+        double xpos, ypos;
+        glfwGetCursorPos(s_window->getGLFWwindow(), &xpos, &ypos);
+        m_mousePosition.x = static_cast<float>(xpos);
+        m_mousePosition.y = static_cast<float>(ypos);
+
+        m_camera->useMouseActions(m_mousePosition);
+    }
+
     m_camera->useKeyboardActions(s_window->getGLFWwindow(), dt);
 }
 
@@ -38,3 +53,8 @@ glm::mat4 CameraController::getViewMatrix() {
 glm::mat4 CameraController::getProjectionMatrix(float aspectRatio) {
     return m_camera->getProjectionMatrix(aspectRatio);
 }
+
+void CameraController::drawDebugPanel() {
+    m_camera->drawDebugPanel();
+}
+

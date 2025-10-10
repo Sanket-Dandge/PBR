@@ -31,7 +31,7 @@ void Bloom::bind() {
     int width = m_width / std::pow(2, m_mipLevel);
     int height = m_height / std::pow(2, m_mipLevel);
 
-    // glViewport(0, 0, width, height);
+    glViewport(0, 0, width, height);
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferID);
 }
 

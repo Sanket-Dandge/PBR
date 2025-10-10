@@ -31,8 +31,8 @@ enum BloomDirection {
 
 struct Scene {
     std::vector<Entity> m_entities;
-    std::vector<glm::vec3> mLightPositions;
-    std::vector<glm::vec3> mLightColors;
+    std::vector<glm::vec3> m_lightPositions;
+    std::vector<glm::vec3> m_lightColors;
 };
 
 class Render {

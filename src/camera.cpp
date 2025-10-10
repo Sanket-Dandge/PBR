@@ -1,6 +1,11 @@
 #include "camera.h"
 
+#include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 Camera::Camera(glm::vec3& position, glm::vec3& up, float yaw, float pitch)
     : m_position(position), m_up(up), m_yaw(yaw), m_pitch(pitch) {}
@@ -80,4 +85,38 @@ void Camera::useMouseActions(const MousePositions& mousePositions) {
     lastY = mousePositions.y;
 
     processMouseMovement(xoffset, yoffset, false);
+}
+
+void Camera::drawDebugPanel() {
+    if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Text("View");
+        ImGui::InputFloat3("up", &m_up.x);
+        ImGui::InputFloat3("position", &m_position.x);
+
+        float yawDegrees = glm::degrees(m_yaw);
+        float pitchDegrees = glm::degrees(m_pitch);
+
+        ImGui::InputFloat("yaw (degrees)", &yawDegrees);
+        ImGui::InputFloat("pitch (degrees)", &pitchDegrees);
+
+        ImGui::Separator();
+        ImGui::Text("Projection");
+        ImGui::SliderFloat("zoom (degrees)", &Window::m_zoom, 0.0f, 180.0f);
+        ImGui::DragFloat("z-plane near", &near, 0.01f, 0.0f, 1000.0f);
+        ImGui::DragFloat("z-plane far", &far, 0.01f, 0.0f, 1000.0f);
+    }
+}
+
+void Camera::resetMouse() {
+    firstMouse = true;
+}
+
+void Camera::enableGUIMouse() {
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags = io.ConfigFlags & !ImGuiConfigFlags_NoMouse;
+}
+
+void Camera::disableGUIMouse() {
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags = io.ConfigFlags & ImGuiConfigFlags_NoMouse;
 }
