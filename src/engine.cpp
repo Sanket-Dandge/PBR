@@ -11,11 +11,8 @@ Engine::Engine(ConfigInfo& config) : config(config) {
 }
 
 void Engine::begin(std::shared_ptr<Scene> scene) {
-    LOG("Starting Engine");
     s_window->startWindow();
-    LOG("Starting Rendering");
     s_render->begin(scene);
-    LOG("After Rendering");
     s_camera->begin();
 }
 

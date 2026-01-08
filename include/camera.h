@@ -48,7 +48,7 @@ class Camera {
     private:
         glm::vec3 m_position;
         glm::vec3 m_up;
-        float m_yaw = -90.0f;
+        float m_yaw = -45.0f;
         float m_pitch = 0.0f;
 
         float m_mouseSpeed = 2.5f;

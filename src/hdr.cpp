@@ -21,9 +21,7 @@ void HDR::loadHDR(const std::string& path) {
     glGenTextures(1, &m_hdrID);
     glBindTexture(GL_TEXTURE_2D, m_hdrID);
 
-    LOG("before hdr teximage");
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
-    LOG("after hdr teximage");
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
